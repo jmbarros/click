@@ -1,0 +1,6 @@
+#!/bin/bash
+app="click"
+/usr/local/bin/docker stop $app
+/usr/local/bin/docker rm $app
+/usr/local/bin/docker build . -t $app
+/usr/local/bin/docker run -d --name $app -p 80:80 $app

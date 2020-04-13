@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+
+    <!-- Bootstrap core CSS -->
+<link href="css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <!-- Favicons -->
+
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+    <!-- Custom styles for this template -->
+    <link href="css/pricing.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+  <h5 class="my-0 mr-md-auto font-weight-normal">Octank Services</h5>
+  <nav class="my-2 my-md-0 mr-md-3">
+    <a class="p-2 text-dark" href="#">Features</a>
+    <a class="p-2 text-dark" href="#">Enterprise</a>
+    <a class="p-2 text-dark" href="#">Support</a>
+    <a class="p-2 text-dark" href="#">Pricing</a>
+  </nav>
+  <a class="btn btn-outline-primary" href="#">Sign up</a>
+</div>
+
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+  <h1 class="display-4">Pricing</h1>
+  <p class="lead">Choose the product and plan that is right for your business. </p>
+  <p class="lead">Your browser fingerprint: <strong id="fp"></strong></p>
+</div>
+
+<div class="container">
+  <div class="card-deck mb-3 text-center">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Basic</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$9 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>10 users included</li>
+          <li>2 GB of storage</li>
+          <li>Email support</li>
+          <li>Help center access</li>
+        </ul>
+        <button type="button" onclick="basic()" class="btn btn-lg btn-block btn-outline-primary">Sign up</button>
+      </div>
+    </div>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Pro</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$15 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>20 users included</li>
+          <li>10 GB of storage</li>
+          <li>Priority email support</li>
+          <li>Help center access</li>
+        </ul>
+        <button type="button" onclick="pro()" class="btn btn-lg btn-block btn-primary">Get started</button>
+      </div>
+    </div>
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal">Enterprise</h4>
+      </div>
+      <div class="card-body">
+        <h1 class="card-title pricing-card-title">$29 <small class="text-muted">/ mo</small></h1>
+        <ul class="list-unstyled mt-3 mb-4">
+          <li>30 users included</li>
+          <li>15 GB of storage</li>
+          <li>Phone and email support</li>
+          <li>Help center access</li>
+        </ul>
+        <button type="button" onclick="ent()" class="btn btn-lg btn-block btn-primary">Contact us</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pt-4 my-md-5 pt-md-5 border-top">
+    <div class="row">
+      <div class="col-6 col-md">
+        <h5>Features</h5>
+        <ul class="list-unstyled text-small">
+          <li><a class="text-muted" href="https://search-click-prod-dpyldl4rrz2ip6bl2ewlpcd4uq.us-east-1.es.amazonaws.com/_plugin/kibana/app/kibana#/dashboard/ea122db0-778f-11ea-8fcf-ad03bf1cf8e5?_g=(filters%3A!()%2CrefreshInterval%3A(pause%3A!t%2Cvalue%3A0)%2Ctime%3A(from%3A'2020-04-03T21%3A30%3A00.000Z'%2Cto%3Anow))">Kibana Dashboard</a></li>
+        </ul>
+      </div>
+      
+      
+    </div>
+  </footer>
+</div>
+<script src="js/aws-sdk-2.283.1.min.js"></script>  
+<script src="fingerprint2.js"></script>
+<script>
+        // Initialize the Amazon Cognito credentials provider
+        AWS.config.region = 'us-east-1'; // Region
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: 'us-east-1:8fc800fd-9627-414a-981f-fea6638c01ad',
+        });
+        AWS.config.credentials.get(function (err) {
+            // attach event listener
+            if (err) {
+                alert('Error retrieving credentials.');
+                console.error(err);
+                return;
+            }
+            // create Amazon Kinesis service object
+            var kinesis = new AWS.Kinesis({
+                apiVersion: '2013-12-02'
+            });
+
+            var params = {
+                Records: [ /* required */
+                    {
+                        Data: JSON.stringify({
+                            url: window.location.href,
+                            figerprint: murmur,
+                            time: new Date(),
+                            offer: "page"
+                        }),
+                        PartitionKey: 'partition-' + AWS.config.credentials.identityId
+                    },
+                ],
+                StreamName: 'click' /* required */
+            };
+            kinesis.putRecords(params, function (err, data) {
+                if (err) console.log(err, err.stack); // an error occurred
+                else console.log(data);           // successful response
+            });
+
+        });
+</script>
+<script>
+var murmur = ""
+var hasConsole = typeof console !== "undefined"
+          if (window.requestIdleCallback) {
+              requestIdleCallback(function () {
+              Fingerprint2.get(function (components) {
+                murmur = Fingerprint2.x64hash128(components.map(function (pair) { return pair.value }).join(), 31)
+                document.querySelector("#fp").textContent = murmur
+                if(hasConsole) {
+                console.log("fingerprint hash", murmur)
+                }
+            })
+              })
+          } else {
+              setTimeout(function () {
+                  Fingerprint2.get(function (components) {
+                    //console.log(components) // an array of components: {key: ..., value: ...}
+                    console.log("fingerprint hash", murmur)
+                  })  
+              }, 500)
+          }
+ // console.log(murmur)
+  function basic() { 
+    // Initialize the Amazon Cognito credentials provider
+    AWS.config.region = 'us-east-1'; // Region
+    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    IdentityPoolId: 'us-east-1:8fc800fd-9627-414a-981f-fea6638c01ad',
+    });
+        AWS.config.credentials.get(function (err) {
+            // attach event listener
+            if (err) {
+                alert('Error retrieving credentials.');
+                console.error(err);
+                return;
+            }
+            // create Amazon Kinesis service object
+            var kinesis = new AWS.Kinesis({
+                apiVersion: '2013-12-02'
+            });
+            
+            var params = {
+                Records: [ /* required */
+                    {
+                        Data: JSON.stringify({
+                            url: window.location.href,
+                            figerprint: murmur,
+                            time: new Date(),
+                            offer: "basic"
+                        }),
+                        PartitionKey: 'partition-' + AWS.config.credentials.identityId
+                    },
+                ],
+                StreamName: 'click' /* required */
+            };
+            kinesis.putRecords(params, function (err, data) {
+                if (err) console.log(err, err.stack); // an error occurred
+                else console.log(data);           // successful response
+            });
+            //console.log(params)
+
+        });
+      }
+  function pro() {
+        // Initialize the Amazon Cognito credentials provider
+        AWS.config.region = 'us-east-1'; // Region
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: 'us-east-1:8fc800fd-9627-414a-981f-fea6638c01ad',
+        });
+        AWS.config.credentials.get(function (err) {
+            // attach event listener
+            if (err) {
+                alert('Error retrieving credentials.');
+                console.error(err);
+                return;
+            }
+            // create Amazon Kinesis service object
+            var kinesis = new AWS.Kinesis({
+                apiVersion: '2013-12-02'
+            });
+
+            var params = {
+                Records: [ /* required */
+                    {
+                        Data: JSON.stringify({
+                            url: window.location.href,
+                            figerprint: murmur,
+                            time: new Date(),
+                            offer: "pro"
+                        }),
+                        PartitionKey: 'partition-' + AWS.config.credentials.identityId
+                    },
+                ],
+                StreamName: 'click' /* required */
+            };
+            kinesis.putRecords(params, function (err, data) {
+                if (err) console.log(err, err.stack); // an error occurred
+                else console.log(data);           // successful response
+            });
+
+        });
+      }
+  function ent() { 
+        // Initialize the Amazon Cognito credentials provider
+        AWS.config.region = 'us-east-1'; // Region
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: 'us-east-1:8fc800fd-9627-414a-981f-fea6638c01ad',
+        });
+        AWS.config.credentials.get(function (err) {
+            // attach event listener
+            if (err) {
+                alert('Error retrieving credentials.');
+                console.error(err);
+                return;
+            }
+            // create Amazon Kinesis service object
+            var kinesis = new AWS.Kinesis({
+                apiVersion: '2013-12-02'
+            });
+
+            var params = {
+                Records: [ /* required */
+                    {
+                        Data: JSON.stringify({
+                            url: window.location.href,
+                            figerprint: murmur,
+                            time: new Date(),
+                            offer: "enterprise"
+                        }),
+                        PartitionKey: 'partition-' + AWS.config.credentials.identityId
+                    },
+                ],
+                StreamName: 'click' /* required */
+            };
+            kinesis.putRecords(params, function (err, data) {
+                if (err) console.log(err, err.stack); // an error occurred
+                else console.log(data);           // successful response
+            });
+
+        });
+      }
+
+</script>
+</body>
+
+</html>
